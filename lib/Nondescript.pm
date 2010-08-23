@@ -23,21 +23,41 @@ has 'breadboard' => (
 sub _build_breadboard {
     my $self = shift;
 
-    return container 'Nondescript' => as {
-        service 'logger' => (
-            block => sub { $self->logger },
+    my $board; $board = container 'Nondescript' => as {
+        service 'breadboard' => (
+            lifecycle => 'Singleton',
+            block     => sub { $board },
         );
 
-        service 'database' => (
-            block => sub { () },
+        service 'logger' => (
+            lifecycle => 'Singleton',
+            block     => sub { $self->logger },
         );
 
         service 'cache' => (
-            block => sub { () },
+            lifecycle    => 'Singleton',
+            class        => 'Nondescript::Cache',
+            dependencies => {
+                logger => depends_on('/logger'),
+            },
         );
 
         service 'bus' => (
-            block => sub { () },
+            lifecycle    => 'Singleton',
+            class        => 'Nondescript::Bus',
+            dependencies => {
+                logger => depends_on('/logger'),
+                cache  => depends_on('/cache'),
+            },
+
+            block => sub {
+                my $b = shift;
+                my $bus = $b->class->new(
+                    logger => $b->get_dependency('logger')->get,
+                );
+                $bus->subscribe_internal($b->get_dependency('cache')->get);
+                return $bus;
+            },
         );
 
         container 'pages' => as {
@@ -48,20 +68,42 @@ sub _build_breadboard {
                     logger => depends_on('/logger'),
                 },
             );
+
+            service 'objects' => (
+                class        => 'Nondescript::Page::Object',
+                dependencies => {
+                    logger => depends_on('/logger'),
+                    bus    => depends_on('/bus'),
+                    cache  => depends_on('/cache'),
+                },
+            );
+
+            service 'subscription' => (
+                class        => 'Nondescript::Page::Object',
+                dependencies => {
+                    logger => depends_on('/logger'),
+                    bus    => depends_on('/bus'),
+                },
+            );
         };
 
+        service 'handlers' => [
+            '/objects/([^/]+)'      => 'pages/objects',
+            '/subscription/([^/]+)' => 'pages/subscriptions',
+            '/'                     => 'pages/index',
+        ];
+
         service 'app' => (
+            type         => 'Setter',
+            class        => 'Tatsumaki::Application',
             dependencies => {
-                index_page => depends_on('/pages/index'),
-            },
-            block => sub {
-                my $b = shift;
-                return Tatsumaki::Application->new([
-                    '/' => $b->get_dependency('index_page')->get,
-                ]);
+                'breadboard'   => depends_on('/breadboard'),
+                'add_handlers' => depends_on('/handlers'),
             },
         );
     };
+
+    return $board;
 }
 
 sub app {

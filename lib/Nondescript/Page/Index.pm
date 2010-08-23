@@ -3,6 +3,7 @@ use Moose;
 use namespace::autoclean;
 
 extends 'Tatsumaki::Handler';
+with 'MooseX::LogDispatch', 'MooseX::Clone';
 
 #__PACKAGE__->asynchronous(1);
 
@@ -14,6 +15,7 @@ has 'message' => (
 
 sub get {
     my $self = shift;
+    $self->logger->debug('index page: get request');
     $self->write("Hello, ". $self->message. ".");
 }
 
