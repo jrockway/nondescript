@@ -5,7 +5,6 @@ use Try::Tiny;
 use Time::HiRes qw(time);
 
 extends 'Tatsumaki::Handler';
-with 'MooseX::LogDispatch', 'MooseX::Clone';
 
 use JSON::XS qw(encode_json decode_json);
 

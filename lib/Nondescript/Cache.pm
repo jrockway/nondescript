@@ -13,13 +13,13 @@ has 'cache' => (
 sub get {
     my ($self, $k) = @_;
     my $v = $self->cache->{$k};
-    $self->logger->debug("cache $self: get '$k' (= '$v')");
+    $self->logger->debug("cache: get '$k' (= '$v')");
     return $v;
 }
 
 sub set {
     my ($self, $k, $v) = @_;
-    $self->logger->debug("cache $self: set '$k' = '$v'");
+    $self->logger->debug("cache: set '$k' = '$v'");
     $self->cache->{$k} = $v;
     return;
 }

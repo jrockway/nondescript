@@ -3,7 +3,6 @@ use Moose;
 use namespace::autoclean;
 
 extends 'Tatsumaki::Handler';
-with 'MooseX::LogDispatch', 'MooseX::Clone';
 
 #__PACKAGE__->asynchronous(1);
 

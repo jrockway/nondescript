@@ -8,9 +8,6 @@ use Bread::Board;
 
 with 'MooseX::LogDispatch';
 
-use Tatsumaki::Application;
-use Nondescript::Page::Index;
-
 use namespace::autoclean;
 
 has 'breadboard' => (
@@ -79,7 +76,7 @@ sub _build_breadboard {
             );
 
             service 'subscription' => (
-                class        => 'Nondescript::Page::Object',
+                class        => 'Nondescript::Page::Subscription',
                 dependencies => {
                     logger => depends_on('/logger'),
                     bus    => depends_on('/bus'),
@@ -88,9 +85,9 @@ sub _build_breadboard {
         };
 
         service 'handlers' => [
-            '/objects/([^/]+)'      => 'pages/objects',
-            '/subscription/([^/]+)' => 'pages/subscriptions',
-            '/'                     => 'pages/index',
+            '/objects/([^/]+)'       => 'pages/objects',
+            '/subscriptions/([^/]+)' => 'pages/subscription',
+            '/'                      => 'pages/index',
         ];
 
         service 'app' => (
