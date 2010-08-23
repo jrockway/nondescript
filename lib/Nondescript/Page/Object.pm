@@ -62,6 +62,8 @@ sub put {
     $self->bus->tell($key, $js);
 
     $self->logger->debug("object page: commit '$key' = '$js'");
+
+    $self->response->content_type('application/json');
     $self->write($js);
     $self->finish;
 }

@@ -58,13 +58,6 @@ sub _build_breadboard {
         );
 
         container 'pages' => as {
-            service 'index' => (
-                lifecycle    => 'Singleton',
-                class        => 'Nondescript::Page::Index',
-                dependencies => {
-                    logger => depends_on('/logger'),
-                },
-            );
 
             service 'objects' => (
                 class        => 'Nondescript::Page::Object',
@@ -80,6 +73,7 @@ sub _build_breadboard {
                 dependencies => {
                     logger => depends_on('/logger'),
                     bus    => depends_on('/bus'),
+                    cache  => depends_on('/cache'),
                 },
             );
         };
@@ -87,7 +81,6 @@ sub _build_breadboard {
         service 'handlers' => [
             '/objects/([^/]+)'       => 'pages/objects',
             '/subscriptions/([^/]+)' => 'pages/subscription',
-            '/'                      => 'pages/index',
         ];
 
         service 'app' => (

@@ -16,17 +16,29 @@ has 'bus' => (
     required => 1,
 );
 
+has 'cache' => (
+    is       => 'ro',
+    isa      => 'Nondescript::Cache',
+    required => 1,
+);
+
 sub get {
     my ($self, $key) = @_;
 
     $self->logger->debug("subscription page: subscribe to '$key'");
 
     $self->multipart_xhr_push(1);
+
+    if(my $v = $self->cache->get($key)){
+        my $obj = decode_json($v);
+        $obj->{access_time} = time;
+        $self->stream_write($obj);
+    }
+
     $self->bus->subscribe($key, $self->async_cb(sub {
         my ($key, $value) = @_;
         my $obj = decode_json($value);
         $obj->{access_time} = time;
-
         $self->stream_write($obj);
     }));
 }
